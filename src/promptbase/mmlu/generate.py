@@ -9,7 +9,7 @@ model_name = "gpt-4o-mini"
 
 
 def generate(dataset_name: str):
-    dev_problem = f"mmlu_{dataset_name}_val"
+    dev_problem = f"mmlu_{dataset_name}_dev"
     test_problem = f"mmlu_{dataset_name}_test"
 
     if not os.path.exists(str(mmlu_data_dir / dev_problem) + ".json.gz"):
@@ -29,7 +29,7 @@ def generate(dataset_name: str):
         ),
         mode="knn",
         num_examples=5,
-        num_repeat=5,
+        num_repeat=1,
         max_thread=50,
         model=model_name,
     )
@@ -41,7 +41,7 @@ def generate(dataset_name: str):
         ),
         mode="knn",
         num_examples=5,
-        num_repeat=15,
+        num_repeat=1,
         max_thread=50,
         model=model_name,
     )

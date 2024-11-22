@@ -62,7 +62,7 @@ def do_chat_cot(bbh_test_path, cot_prompt_path, test_name, cot_results_path):
             prompt_messages = few_shot_messages + [
                 {"role": "user", "content": "Q: " + example["input"]}
             ]
-            response = text_completion(prompt=prompt_messages, max_tokens=2000, model="gpt-4-1106-preview", retry_wait=2, max_trial=int(1e9))
+            response = text_completion(prompt=prompt_messages, max_tokens=2000, model="gpt-4o-mini", retry_wait=2, max_trial=int(1e9))
             if "text" not in response:
                 _logger.error("Error in example %s of test %s response: %s", i, test_name, response)
                 continue

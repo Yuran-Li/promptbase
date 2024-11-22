@@ -16,7 +16,7 @@ from tqdm import tqdm
 openai_configs = types.SimpleNamespace()
 
 openai_configs.models = {
-    "gpt-4-1106-preview": {"endpoint": "azure_chat", "type": "chat"},
+    "gpt-4o-mini": {"endpoint": "azure_chat", "type": "chat"},
     "gpt-4-1106-comp": {"endpoint": "azure_comp", "type": "completion"},
     "text-embedding-ada-002": {"endpoint": "openai-embeddings", "type": "embedding"},
 }
@@ -89,7 +89,7 @@ def run_batch_jobs(run_task, tasks, max_thread):
 
 def text_completion_impl(
     prompt,
-    model="gpt-4-1106-preview",
+    model="gpt-4o-mini",
     temperature=0,
     max_tokens=3500,
     top_p=1.0,

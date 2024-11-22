@@ -62,7 +62,7 @@ def solve(idx):
             log_file="human_eval.log",
             max_trial=5,
             temperature=retry * 0.5,
-            model="gpt-4-1106-preview",
+            model="gpt-4o-mini",
         )
 
         if not response["success"]:

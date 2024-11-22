@@ -137,7 +137,7 @@ Answer: [C]""",
 
 
 def generate_solutions_without_rank(
-    problem_name, run_name=None, model="gpt-4-1106-preview"
+    problem_name, run_name=None, model="gpt-4o-mini"
 ):
     if run_name is None:
         run_name = f"{problem_name}/cot_without_rank"
@@ -147,7 +147,7 @@ def generate_solutions_without_rank(
     options["num_examples"] = 5
     options["options"] = "ABCD"
     options["max_thread"] = 40
-    options["num_repeat"] = 5
+    options["num_repeat"] = 1
     options["model"] = model
     options["max_retry"] = 2
     run_experiment(options)
@@ -161,7 +161,7 @@ def run_logprobs(
     num_repeat=5,
     max_thread=20,
     verbose=True,
-    model="gpt-4-1106-preview",
+    model="gpt-4o-mini",
 ):
     options = copy.deepcopy(letter_5shots)
     options["response_type"] = "logprobs"
@@ -201,7 +201,7 @@ def run_letters(
     num_repeat=5,
     max_thread=20,
     verbose=True,
-    model="gpt-4-1106-preview",
+    model="gpt-4o-mini",
 ):
     options = copy.deepcopy(letter_5shots)
     if run_name is None:
@@ -240,7 +240,7 @@ def run_cot_without_rank(
     balance_answer=True,
     max_thread=20,
     verbose=True,
-    model="gpt-4-1106-preview",
+    model="gpt-4o-mini",
 ):
     options = copy.deepcopy(cot_without_rank)
     if run_name is None:

@@ -134,12 +134,12 @@ def solve(idx):
     _logger.info("Starting solve")
 
     if CHAT_MODE:
-        model_name = "gpt-4-1106-preview"
+        model_name = "gpt-4o-mini"
         reasoning_file_name = "drop_data_cot_reasoning_chat.log"
         answer_file_name = "drop_data_cot_final_chat.log"
         json_file_name = "drops_cot_raw_responses_chat.jsonl"
     else:
-        model_name = "gpt-4-1106-preview"
+        model_name = "gpt-4o-mini"
         reasoning_file_name = "drop_data_cot_reasoning.log"
         answer_file_name = "drop_data_cot_final.log"
         json_file_name = "drops_cot_raw_responses.jsonl"

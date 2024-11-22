@@ -122,9 +122,8 @@ def solve(options, problem):
     completion_tokens = 0
     calls = 0
     name = f"{options['name']}/{options['order']}"
-    model = options.get("model", "gpt-4-1106-preview")
+    model = options.get("model", "gpt-4o-mini")
     set_order(problem, options["order"])
-
     for retry in range(options.get("max_retry", 3)):
         if "example_selector" not in options:
             selected_examples = []
@@ -250,7 +249,7 @@ def solve(options, problem):
                 }
             )
 
-        # 调用 text_completion
+        # utils.text_completion
         response = text_completion(
             model=model,
             prompt=messages,

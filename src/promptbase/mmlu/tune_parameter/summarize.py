@@ -5,10 +5,10 @@ from .problem_utils import *
 
 cot_rows1 = load_problems("mmlu/expt/final/MMLU_test/cot_without_rank_knn_5_v0/result")
 cot_rows2 = load_problems(
-    "mmlu/expt/final/MMLU_test/cot_without_rank_knn_5_gpt-4-1106-preview/result"
+    "mmlu/expt/final/MMLU_test/cot_without_rank_knn_5_gpt-4o-mini/result"
 )
 cot_rows3 = load_problems(
-    "mmlu/expt/final/MMLU_test/cot_without_rank_knn_5_gpt-4-1106-preview/result"
+    "mmlu/expt/final/MMLU_test/cot_without_rank_knn_5_gpt-4o-mini/result"
 )
 logprobs_rows1 = load_problems("mmlu/expt/final/MMLU_test/logprobs5_MMLU_dev/result")
 logprobs_rows2 = load_problems("mmlu/expt/final/MMLU_test/logprobs5_MMLU_test/result")

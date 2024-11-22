@@ -33,7 +33,7 @@ if not os.path.exists(f"mmlu/expt/{test_name}/cot_merged.json.gz"):
             max_thread=30,
             num_examples=5,
             example_selector="knn",
-            model="gpt-4-1106-preview",
+            model="gpt-4o-mini",
         )
         return "Done!"
 
@@ -74,7 +74,7 @@ def generate_test_cot(index):
         max_thread=30,
         num_examples=5,
         mode="knn",
-        model="gpt-4-1106-preview",
+        model="gpt-4o-mini",
     )
     return "Done!"
 
