@@ -1,6 +1,7 @@
 import copy
 from liquid import Template
 from .experiment import *
+from .experiment_refine import *
 
 letter_5shots = {
     "prompt_name": "letter_5shots",
@@ -135,6 +136,132 @@ Answer: [C]""",
     ],
 }
 
+cot_step_by_step = {
+    "prompt_name": "cot_without_rank",
+    "response_type": "MC",
+    "prompt": Template(
+        """{% for item in examples %}## Question
+{{ item.question }}
+
+## Answer
+{{ item.answer }}
+
+{% endfor %}## Question
+{{ question }}
+## Context
+{{context}}
+## Answer
+"""
+    ),
+    "examples": [
+        {
+            "question": """Exits on a highway are numbered consecutively from 1 to 50. The distance from exit 41 to exit 50 is 100 km. If each exit is at least 6 km from the next exit, what is the longest possible distance, in kilometers, between exit 47 and exit 48?
+
+A. 52
+B. 51
+C. 50
+D. 49""",
+            "answer": """
+            Goal: Maximize the distance between exits 47 and 48 by minimizing the distances of the other intervals. 
+            
+            Step 1: Minimize 8 intervals to 6 km each, totaling \(8 \\times 6 = 48\) km. 
+            Step 2: Subtract \(48\) from \(100\) to find the remaining distance: \(100 - 48 = 52\). 
+            
+            Conclusion: The longest distance between exits 47 and 48 is **52 km**.
+
+Answer: [A]""",
+        },
+        {
+            "question": """The two principal contractile proteins found in skeletal muscle are:
+A. actin and troponin.
+B. actin and myosin.
+C. troponin and tropomyosin.
+D. myosin and tropomyosin.""",
+            "answer": """
+            Context: Actin forms thin filaments in muscle fibers, providing sites for myosin heads to bind during contraction. Myosin is a thick filament protein, and its heads bind to actin to pull it toward the sarcomere’s center, causing muscle contraction. Troponin and tropomyosin are regulatory proteins that control this interaction based on calcium ion levels.
+            
+            Conclusion: The primary contractile proteins driving skeletal muscle contraction are actin and myosin.
+
+Answer: [B]""",
+        },
+        {
+            "question": """A man was angry at a coworker who had received a promotion. The man believed that the coworker had taken credit for the man's work and had bad- mouthed him to their boss. One day, as the man was leaving the company parking lot in his car, he saw the coworker walking through the lot. On a sudden impulse, the man pushed the accelerator pedal hard and veered toward the coworker with the intention of scaring him. The coworker tried to jump out of the way but slipped and fell and was run over. Although the coworker suffered life-threatening injuries, he survived. In a jurisdiction that follows the common law of homicide, could the man properly be convicted of attempted murder? 
+
+A. No, because the coworker's slip and fall broke the chain of proximate causation.
+B. No, because the man lacked the requisite intent.
+C. Yes, because the coworker suffered life- threatening injuries.
+D. Yes, because the man acted with reckless disregard for human life.""",
+            "answer": """
+            Goal: Determine whether the man can be convicted of attempted murder under the common law of homicide.
+            
+            Context: Under common law, attempted murder requires a specific intent to kill. A person may be convicted of attempted murder if they act with the intention to kill another, even if their attempt is unsuccessful. 
+            
+            Step 1: In this case, the man intentionally veered his car toward the coworker, but his intent was to scare, not to kill. 
+            Step 2: The coworker suffered life-threatening injuries due to the man's actions, but this alone does not automatically mean the man intended to commit murder.
+            Step 3: Under common law, attempted murder requires specific intent to kill, which the man lacked in this case.
+            
+            Conclusion: The man cannot be convicted of attempted murder due to lack of intent.
+
+Answer: [B]""",
+        },
+        {
+            "question": """Which one of the following is not a vectored interrupt?
+    
+A. TRAP.
+B. RST 7.5.
+C. RST 6.5.
+D. INTR.""",
+            "answer": """
+            Context: Vectored interrupts are a type of interrupt where the address of the interrupt service routine (ISR) is hardwired. That means the processor automatically knows where to go when the interrupt occurs. 
+            
+            Step 1: **TRAP** is a vectored interrupt. It has a fixed location in memory, so when the TRAP interrupt occurs, the processor knows exactly where to go.
+            Step 2: **RST 7.5 and RST 6.5** are also vectored interrupts in the Intel 8085 microprocessor. These interrupts have predefined memory addresses, so the processor can jump directly to these addresses when these interrupts are triggered.
+            Step 3: **INTR**, on the other hand, is a non-vectored interrupt. It does not have a predefined memory address. Instead, when the INTR interrupt occurs, the device has to supply the address of the ISR through an external process, typically involving a bus for the address.
+            
+            Conclusion: **INTR** is not a vectored interrupt.
+
+Answer: [D]""",
+        },
+        {
+            "question": """A psychologist who believes in the humanistic perspective would be most likely to agree with which of the following statements?
+
+A. All behavior can be traced to human biological functions.
+B. Behavior results from conditioning.
+C. People's behavior is primarily a result of free will.
+D. Human behavior is a result of conflicting unconscious motives.""",
+            "answer": """
+            Context: The humanistic perspective in psychology, pioneered by figures like Carl Rogers and Abraham Maslow, emphasizes the importance of free will, self-actualization, and the innate drive towards personal growth. This approach views humans as inherently good and capable of making choices that shape their lives. 
+            
+            Step 1: Option A (biological perspective) focuses on biology, not free will.
+            Step 2: Option B (behaviorism) stresses conditioning and environmental factors, contrary to humanism's focus on personal choice.
+            Step 3: Option D (psychoanalysis) attributes behavior to unconscious motives, while humanism emphasizes conscious choice.
+
+            Conclusion: The humanistic perspective values free will, so Option C is the best fit.
+
+Answer: [C]""",
+        },
+    ],
+}
+
+
+def generate_solutions_step_by_step(
+    problem_name, run_name=None, rag_problems=None, model="gpt-4o-mini"
+):
+    if run_name is None:
+        run_name = f"{problem_name}/rag_step_by_step_cot"
+    if rag_problems is None:
+        return "No problem needs retrieval!"
+    options = copy.deepcopy(cot_step_by_step)
+    options["problems"] = problem_name
+    options["name"] = run_name
+    options["num_examples"] = 5
+    options["options"] = "ABCD"
+    options["max_thread"] = 1
+    options["num_repeat"] = 2
+    options["model"] = model
+    options["max_retry"] = 2
+    options["rag_problems"] = rag_problems
+    run_experiment_refine(options)
 
 def generate_solutions_without_rank(
     problem_name, run_name=None, model="gpt-4o-mini"
@@ -147,7 +274,7 @@ def generate_solutions_without_rank(
     options["num_examples"] = 5
     options["options"] = "ABCD"
     options["max_thread"] = 40
-    options["num_repeat"] = 1
+    options["num_repeat"] = 5
     options["model"] = model
     options["max_retry"] = 2
     run_experiment(options)

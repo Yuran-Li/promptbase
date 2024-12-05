@@ -14,7 +14,8 @@ import numpy as np
 import requests
 from tqdm import tqdm
 
-import openai
+from openai import OpenAI
+from openai import OpenAIError
 
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "WARN"))
 
@@ -106,11 +107,11 @@ def run_batch_jobs(run_task, tasks, max_thread):
 ################################################################################
 # OpenAI API Tools
 ################################################################################
-openai.api_key = f"{os.getenv('OPENAI_API_KEY')}"
 
 def embed(text, model_name="text-embedding-ada-002"):
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
     try:
-        response = openai.Embedding.create(
+        response = client.embeddings.create(
                 input=text,
                 model=model_name
             )
@@ -121,7 +122,7 @@ def embed(text, model_name="text-embedding-ada-002"):
         else:
             sorted_data = sorted(data, key=lambda x:x["index"])
             return [item["embedding"] for item in sorted_data]
-    except openai.OpenAIError as e:
+    except OpenAIError as e:
         print(f"Error while generating embedding: {e}")
         exit()   
 
@@ -158,16 +159,8 @@ def text_completion_impl(
     max_trial=100,
     **kwargs,
 ):
-    """
-    Performs text completion using the openai API with
-    - prompt (str or array of str)
-    - model ("text-davinci-003", "text-davinci-002", ...)
-    - tempature (0 for picking the best token, 1 for more creative solution)
-    - max_tokens (limit the total number of generated tokens. 8193 is the maximum context length text-alpha-002)
-    - max_trial (the number of retry after getting rate limited warning, we rethrow for all other errors)
-    - logprobs (return a list of the most likely tokens and its probabilites. either integer in [1,5] or None)
-    - stop (string or list of string (up to 4 strings). The returned text will not contain the stop sequence.)
-    """
+  
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"), )
     for attempt in range(max_trial):
         try:
             # 控制重试间隔
@@ -175,7 +168,7 @@ def text_completion_impl(
 
             if isinstance(prompt, list) and isinstance(prompt[0], dict):
                 # Chat-style prompt
-                response = openai.ChatCompletion.create(
+                response = client.chat.completions.create(
                     model=model,
                     messages=prompt,
                     temperature=temperature,
@@ -187,7 +180,7 @@ def text_completion_impl(
                 )
             else:
                 # Completion-style prompt
-                response = openai.Completion.create(
+                response = client.completions.create(
                     model=model,
                     prompt=prompt,
                     temperature=temperature,
@@ -202,11 +195,11 @@ def text_completion_impl(
             # 返回结果
             return {
                 "response": response,
-                "text": response.choices[0].get("text", "") if "text" in response.choices[0] else response.choices[0]["message"]["content"],
+                "text": response.choices[0].text if "text" in response.choices[0] else response.choices[0].message.content,
                 "success": True,
             }
 
-        except openai.OpenAIError as e:
+        except OpenAIError as e:
             logging.error(f"Attempt {attempt + 1}/{max_trial} failed: {str(e)}")
             if attempt + 1 == max_trial:
                 return {"error": str(e), "success": False}
