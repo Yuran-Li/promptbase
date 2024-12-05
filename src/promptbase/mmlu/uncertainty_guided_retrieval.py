@@ -39,7 +39,16 @@ def RAG_CoT(dataset_name: str):
             probability = correct_n/total_n
             p_correct.append(probability)
             if probability<0.9:
-                list_retrieval.append((item))
+                list_retrieval.append({"question_number": item["question_number"], 
+                                       "question": item["question"],
+                                       "correct_answer": item["correct_answer"],
+                                       "has_media": item["has_media"],
+                                       "dataset": item["dataset"],
+                                       "id": item["id"],
+                                       "split": item["split"],
+                                       "extra": item["extra"],
+                                       "answer_choices": item["answer_choices"]
+                                       })
 
     MMLU.generate_solutions_step_by_step(
                     dev_problem, 
