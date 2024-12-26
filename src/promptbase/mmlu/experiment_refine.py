@@ -141,7 +141,8 @@ class LineListOutputParser(BaseOutputParser[List[str]]):
         lines = text.strip().split("\n")
         return list(filter(None, lines))  # Remove empty lines
 
-class retrival:
+'''
+class Retrieval_class:
     def __init__(self, openai_api_key, google_api_key, google_cse_id):
         self.openai_api_key = openai_api_key
         self.google_api_key = google_api_key
@@ -231,6 +232,95 @@ class retrival:
         # Results
         unique_docs = retriever.invoke(problem)
         len(unique_docs)
+        return unique_docs
+'''
+
+import wikipediaapi
+
+class Retrieval_class:
+    def __init__(self, openai_api_key):
+        self.openai_api_key = openai_api_key
+
+    def generate_search_queries(self, problem):
+        """
+        Generate multiple search queries using LLM.
+        """
+        # Define prompt for query generation
+        query_prompt = PromptTemplate(
+            input_variables=["problem"],
+            template=(
+                "You are an AI assistant tasked with generating diverse search queries. "
+                "Given the user's problem, provide five alternative search queries. "
+                "Separate each query with a newline.\nUser problem: {problem}"
+            ),
+        )
+        # LLM setup
+        llm = ChatOpenAI(
+            model="gpt-4o-mini",
+            openai_api_key=self.openai_api_key,
+            temperature=0.3
+        )
+
+        # Create a chain
+        output_parser = LineListOutputParser()
+        llm_chain = RunnableSequence(query_prompt | llm | output_parser)
+
+        # Generate queries
+        search_queries = llm_chain.invoke({"problem": problem})
+        return search_queries
+
+    def wikipedia_search(search_query, num_results=3):
+        wiki_wiki = wikipediaapi.Wikipedia('en')  
+        page = wiki_wiki.page(search_query)
+        if page.exists():
+            return [page.summary[:500]]  # return 500 summary
+        else:
+            return []
+
+    def retrieve(self, problem):
+        # Generate search queries using LLM
+        search_queries = self.generate_search_queries(problem)
+        
+        # Retrieve snippets for each query from Wikipedia
+        retrieved_snippets = []
+        for query in search_queries:
+            retrieved_snippets.extend(self.wikipedia_search(query, num_results=3))
+
+        # Create vector database
+        text_splitter = CharacterTextSplitter(chunk_size=300, chunk_overlap=50)
+        docs = text_splitter.create_documents(retrieved_snippets)
+        embeddings = OpenAIEmbeddings(openai_api_key=self.openai_api_key)
+        vectordb = FAISS.from_documents(docs, embeddings)
+
+        # Retrieve through multi-queries
+        output_parser = LineListOutputParser()
+        
+        QUERY_PROMPT = PromptTemplate(
+            input_variables=["question"],
+            template="""You are an AI language model assistant. Your task is to generate five 
+            different versions of the given user question to retrieve relevant documents from a vector 
+            database. By generating multiple perspectives on the user question, your goal is to help
+            the user overcome some of the limitations of the distance-based similarity search. 
+            Provide these alternative questions separated by newlines.
+            Original question: {question}""",
+        )
+
+        llm = ChatOpenAI(
+            model="gpt-4o-mini", 
+            openai_api_key=self.openai_api_key, 
+            temperature=0
+        )
+
+        # Chain
+        llm_chain = QUERY_PROMPT | llm | output_parser
+
+        # Multi-query retriever setup
+        retriever = MultiQueryRetriever(
+            retriever=vectordb.as_retriever(), llm_chain=llm_chain, parser_key="lines"
+        )  # "lines" is the key (attribute name) of the parsed output
+
+        # Results
+        unique_docs = retriever.invoke(problem)
         return unique_docs
 
 def solve(options, problem):
@@ -330,10 +420,8 @@ def solve(options, problem):
 
         ########  step1. generate query and retrival helpful extra info  #######
         ##extra info collection
-        Retrieval = retrival(
+        Retrieval = Retrieval_class(
             openai_api_key=os.getenv("OPENAI_API_KEY"),
-            google_api_key=os.getenv("GOOGLE_API_KEY"),
-            google_cse_id=os.getenv("GOOGLE_CSE_ID")
         )
         retrieve_doc = Retrieval.retrieve(problem["description"])
 

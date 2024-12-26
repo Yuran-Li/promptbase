@@ -77,7 +77,8 @@ def main():
         # data, and then use the 'format_mmlu.py' script
         #mmlu.generate(args.subject)
         #mmlu.evaluate_all(args.subject)
-        mmlu.RAG_CoT(args.subject)
+        mmlu.RAG_CoT_dev(args.subject)
+        #mmlu.RAG_CoT_test(args.subject)
     else:
         raise ValueError(f"Bad dataset: {args.dataset}")
 

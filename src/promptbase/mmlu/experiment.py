@@ -140,7 +140,7 @@ def solve(options, problem):
             )
         else:
             raise f"Unsupported example_selector: {options['example_selector']}"
-
+        
         # just some safety check to avoid leaking the answer
         selected_examples = [
             example
